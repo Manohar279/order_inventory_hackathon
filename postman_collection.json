@@ -1,0 +1,92 @@
+{
+  "info": {
+    "name": "Order Service - Hackathon Demo",
+    "description": "Restart the app before running so stock is at seed values. Run requests top to bottom.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:8080" }],
+  "item": [
+    {
+      "name": "0. GET products (stock before)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products" }
+    },
+    {
+      "name": "TC01 - Confirm 101x1 + 102x2",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"customerId\":\"CUST001\",\"items\":[{\"productId\":101,\"quantity\":1},{\"productId\":102,\"quantity\":2}]}" },
+        "url": "{{baseUrl}}/api/orders"
+      }
+    },
+    {
+      "name": "TC01b - GET products (101=9, 102=23)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products" }
+    },
+    {
+      "name": "TC02 - Reject 105x1 (out of stock)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"customerId\":\"CUST001\",\"items\":[{\"productId\":105,\"quantity\":1}]}" },
+        "url": "{{baseUrl}}/api/orders"
+      }
+    },
+    {
+      "name": "TC03 - Unknown product (400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"customerId\":\"CUST001\",\"items\":[{\"productId\":999,\"quantity\":1}]}" },
+        "url": "{{baseUrl}}/api/orders"
+      }
+    },
+    {
+      "name": "TC04 - GET order 1001",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/orders/1001" }
+    },
+    {
+      "name": "TC05 - Mixed order, one item out of stock (REJECTED, no partial deduction)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"customerId\":\"CUST002\",\"items\":[{\"productId\":101,\"quantity\":1},{\"productId\":103,\"quantity\":2},{\"productId\":105,\"quantity\":1}]}" },
+        "url": "{{baseUrl}}/api/orders"
+      }
+    },
+    {
+      "name": "Validation - quantity 0 (400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"customerId\":\"CUST001\",\"items\":[{\"productId\":101,\"quantity\":0}]}" },
+        "url": "{{baseUrl}}/api/orders"
+      }
+    },
+    {
+      "name": "GET audit 1001",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/audit/1001" }
+    },
+    {
+      "name": "GET audit 1002",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/audit/1002" }
+    },
+    {
+      "name": "GET products (final: 101 still 9, 103 still 15)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products" }
+    },
+    {
+      "name": "Bonus - Idempotent submit (send twice, same orderId)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"customerId\":\"CUST003\",\"requestId\":\"REQ-001\",\"items\":[{\"productId\":104,\"quantity\":1}]}" },
+        "url": "{{baseUrl}}/api/orders"
+      }
+    },
+    {
+      "name": "Bonus - Cancel order 1001 (restores stock)",
+      "request": { "method": "POST", "url": "{{baseUrl}}/api/orders/1001/cancel" }
+    }
+  ]
+}
